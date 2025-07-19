@@ -14,9 +14,20 @@ FROM base AS builder
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 RUN apk add --no-cache jq
+RUN apk add --no-cache git
 WORKDIR /app
 
-COPY . .
+# Build arguments for repository configuration
+ARG DOCUMENSO_REPO=git@github.com:parekhfenil/documenso.git
+ARG DOCUMENSO_BRANCH=main
+ARG DOCUMENSO_TOKEN
+
+# Clone the repository
+RUN if [ -n "$DOCUMENSO_TOKEN" ]; then \
+        git clone --branch ${DOCUMENSO_BRANCH} https://${DOCUMENSO_TOKEN}@github.com/parekhfenil/documenso.git . ; \
+    else \
+        git clone --branch ${DOCUMENSO_BRANCH} ${DOCUMENSO_REPO} . ; \
+    fi
 
 RUN npm install -g "turbo@^1.9.3"
 
